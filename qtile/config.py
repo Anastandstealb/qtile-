@@ -37,7 +37,7 @@ from libqtile.utils import guess_terminal
 from typing import List
 
 mod = "mod4"
-terminal = guess_terminal()
+terminal = alacritty()
 
 keys = [
     # A list of available commands that can be bound to keys can be found
