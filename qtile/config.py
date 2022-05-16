@@ -37,7 +37,7 @@ from libqtile.utils import guess_terminal
 from typing import List
 
 mod = "mod4"
-terminal = alacritty()
+terminal = guess_terminal()
 
 keys = [
     # A list of available commands that can be bound to keys can be found
@@ -80,55 +80,148 @@ keys = [
     Key([mod], "w", lazy.window.kill(), desc="Kill focused window"),
     Key([mod, "control"], "r", lazy.reload_config(), desc="Reload the config"),
     Key([mod, "control"], "q", lazy.shutdown(), desc="Shutdown Qtile"),
-    Key([mod], "r", lazy.spawncmd(), desc="Spawn a command using a prompt widget"),
+    # ~ Key([mod], "r", lazy.spawncmd(), desc="Spawn a command using a prompt widget"),
+# INCREASE/DECREASE BRIGHTNESS
+    Key([], "XF86MonBrightnessUp", lazy.spawn("xbacklight -inc 5")),
+    Key([], "XF86MonBrightnessDown", lazy.spawn("xbacklight -dec 5")),
+
+# INCREASE/DECREASE/MUTE VOLUME
+    Key([], "XF86AudioMute", lazy.spawn("amixer -q set Master toggle")),
+    Key([], "XF86AudioLowerVolume", lazy.spawn("amixer -q set Master 5%-")),
+    Key([], "XF86AudioRaiseVolume", lazy.spawn("amixer -q set Master 5%+")),
+
+    Key([], "XF86AudioPlay", lazy.spawn("playerctl play-pause")),
+    Key([], "XF86AudioNext", lazy.spawn("playerctl next")),
+    Key([], "XF86AudioPrev", lazy.spawn("playerctl previous")),
+    Key([], "XF86AudioStop", lazy.spawn("playerctl stop")),
+
+    
 ]
 
-groups = [Group(i) for i in "123456789"]
+groups = []
+group_names = ["1", "2", "3", "4", "5", "6", "7", ]
+# ~ group_labels = ["  ", "  ", " " ", "  " , " " ", " " ", "  " , "  ", "  ", "  ",]
+group_labels = ["Web","Edit/chat", "Image", "Gimp", "Meld", "Video", "Files",]
+group_layouts = ["monadtall", "monadtall", "monadtall", "monadtall", "monadtall", "monadtall", "monadtall", "monadtall", "monadtall", "monadtall",]
+for i in range(len(group_names)):
+    groups.append(
+        Group(
+            name=group_names[i],
+            layout=group_layouts[i].lower(),
+            label=group_labels[i],
+        ))
 
 for i in groups:
-    keys.extend(
-        [
-            # mod1 + letter of group = switch to group
-            Key(
-                [mod],
-                i.name,
-                lazy.group[i.name].toscreen(),
-                desc="Switch to group {}".format(i.name),
-            ),
-            # mod1 + shift + letter of group = switch to & move focused window to group
-            Key(
-                [mod, "shift"],
-                i.name,
-                lazy.window.togroup(i.name, switch_group=True),
-                desc="Switch to & move focused window to group {}".format(i.name),
-            ),
-            # Or, use below if you prefer not to switch to that group.
-            # # mod1 + shift + letter of group = move focused window to group
-            # Key([mod, "shift"], i.name, lazy.window.togroup(i.name),
-            #     desc="move focused window to group {}".format(i.name)),
-        ]
-    )
+    keys.extend([
 
+#CHANGE WORKSPACES
+        Key([mod], i.name, lazy.group[i.name].toscreen()),
+        Key([mod], "Tab", lazy.screen.next_group()),
+
+
+
+
+
+# MOVE WINDOW TO SELECTED WORKSPACE 1-10 AND STAY ON WORKSPACE
+        #Key([mod, "shift"], i.name, lazy.window.togroup(i.name)),
+# MOVE WINDOW TO SELECTED WORKSPACE 1-10 AND FOLLOW MOVED WINDOW TO WORKSPACE
+        Key([mod, "shift"], i.name, lazy.window.togroup(i.name) , lazy.group[i.name].toscreen()),
+    ])
+
+	# ~ groups = [Group(i) for i in "123456789"]
+
+	# ~ for i in groups:
+		# ~ keys.extend(
+			# ~ [
+				# ~ # mod1 + letter of group = switch to group
+				# ~ Key(
+					# ~ [mod],
+					# ~ i.name,
+					# ~ lazy.group[i.name].toscreen(),
+					# ~ desc="Switch to group {}".format(i.name),
+				# ~ ),
+				# ~ # mod1 + shift + letter of group = switch to & move focused window to group
+				# ~ Key(
+					# ~ [mod, "shift"],
+					# ~ i.name,
+					# ~ lazy.window.togroup(i.name, switch_group=True),
+					# ~ desc="Switch to & move focused window to group {}".format(i.name),
+				# ~ ),
+			 
+			# ~ ]
+		# ~ )
+		
+def init_layout_theme():
+    return {"margin":5,
+            "border_width":2,
+            "border_focus": "#FFFFFF",
+           # "border_normal": "#4c566a"
+            }
+
+layout_theme = init_layout_theme() 
 layouts = [
-    layout.Columns(border_focus_stack=["#d75f5f", "#8f3d3d"], border_width=4),
-    layout.Max(),
-    # Try more layouts by unleashing below layouts.
-    # layout.Stack(num_stacks=2),
-    # layout.Bsp(),
-    # layout.Matrix(),
-    # layout.MonadTall(),
-    # layout.MonadWide(),
-    # layout.RatioTile(),
-    # layout.Tile(),
-    # layout.TreeTab(),
-    # layout.VerticalTile(),
-    # layout.Zoomy(),
+    layout.MonadTall(margin=4, border_width=1, border_focus="#5e81ac", border_normal="#4c566a"),
+   # layout.MonadWide(margin=8, border_width=2, border_focus="#5e81ac", border_normal="#4c566a"),
+   # layout.Matrix(**layout_theme),
+   # layout.Bsp(**layout_theme),
+   # layout.Floating(**layout_theme),
+   # ~ layout.RatioTile(**layout_theme),
+   # layout.Max(**layout_theme)
 ]
 
+# ~ old code
+# ~ layouts = [
+    # ~ layout.Columns(border_focus_stack=["#d75f5f", "#8f3d3d"], border_width=4),
+    # ~ layout.Max(),
+    # ~ # Try more layouts by unleashing below layouts.
+    # ~ # layout.Stack(num_stacks=2),
+    # ~ # layout.Bsp(),
+    # ~ # layout.Matrix(),
+    # ~ # layout.MonadTall(),
+    # ~ # layout.MonadWide(),
+    # ~ # layout.RatioTile(),
+    # ~ # layout.Tile(),
+    # ~ # layout.TreeTab(),
+    # ~ # layout.VerticalTile(),
+    # ~ # layout.Zoomy(),
+# ~ ]
+
+colors = [["#282c34", "#282c34"], #282c34 color description : Very dark grayish blue.[0]
+          ["#1c1f24", "#1c1f24"], #1c1f24 color description : Very dark (mostly black) blue.[1]
+          ["#dfdfdf", "#dfdfdf"], #dfdfdf color description : Very light gray.[2]
+          ["#ff6c6b", "#ff6c6b"], #ff6c6b color description : Very light red.[3]
+          ["#98be65", "#98be65"], #98be65 color description : Slightly desaturated green.[4]
+          ["#da8548", "#da8548"], #da8548 color description : Soft orange.[5]
+          ["#51afef", "#51afef"], #51afef color description : Soft blue.[6]
+          ["#c678dd", "#c678dd"], #c678dd color description : Soft magenta.[7]
+          ["#46d9ff", "#46d9ff"], #46d9ff color description : Light cyan.[8]
+          ["#a9a1e1", "#a9a1e1"]] #a9a1e1 color description : Very soft blue[9]
+          
+colors2 = {
+    "flamingo": "#F2CDCD",
+    "mauve": "#DDB6F2",
+    "pink": "#F5C2E7",
+    "maroon": "#E8A2AF",
+    "red": "#F28FAD",
+    "peach": "#F8BD96",
+    "yellow": "#FAE3B0",
+    "green": "#ABE9B3",
+    "teal": "#B5E8E0",
+    "blue": "92CDFB",
+    "sky": "#89DCEB",
+    "white": "#D9E0EE",
+    "gray0": "#6E6C7E",
+    "black1": "#1A1826",
+}
+
+prompt = "{0}@{1}: ".format(os.environ["USER"], socket.gethostname())
+
+
 widget_defaults = dict(
-    font="sans",
-    fontsize=12,
-    padding=3,
+    font="font awesome",
+    fontsize = 10,
+    padding = 2,
+    # ~ background=colors2["gray0"],
 )
 extension_defaults = widget_defaults.copy()
 
@@ -136,23 +229,152 @@ screens = [
     Screen(
         top=bar.Bar(
             [
-                widget.CurrentLayout(),
-                widget.GroupBox(),
-                widget.Prompt(),
-                widget.WindowName(),
-                widget.Chord(
-                    chords_colors={
-                        "launch": ("#ff0000", "#ffffff"),
-                    },
-                    name_transform=lambda name: name.upper(),
+			widget.TextBox(
+				text=" 異 " ,
+				fontsize = 12,
+				# ~ mouse_callbacks={"Button1": lazy.spawn("")},
+				mouse_callbacks={'Button1': lambda: qtile.cmd_spawn("rofi -show run")},
+				foreground=colors2["pink"],
+				),
+				widget.Sep(
+                    linewidth=0,
+                    padding=6
                 ),
-                widget.Clock(format="%Y-%m-%d %a %I:%M %p"),
+            
+                
+                widget.CurrentLayout(
+                font = "Noto Sans Bold",
+                foreground = colors[5],
+                # ~ background = colors[1]
+                ),
+                
+                widget.Sep(
+                    linewidth=0,
+                    padding=6
+                ),
+                widget.GroupBox(
+					active=colors2["pink"],
+                    rounded=False,
+                    # ~ background=colors2["peach"],
+                    # ~ highlight_color=colors2["peach"],
+                    highlight_method="line",
+                    borderwidth=3,
+                    margin=4,
+                    padding=1
+                ),
+                # ~ widget.TextBox(
+					# ~ text="", 
+					# ~ padding=0, 
+					# ~ fontsize=20, 
+					# ~ foreground=colors2["peach"]
+					# ~ ),
+                # ~ widget.Prompt(),
+                 widget.Sep(
+                    linewidth=0,
+                    padding=6
+                ),
+                widget.WindowName(
+					fontsize = 12,
+                    foreground = "#0099e6",
+
+                ),
+            widget.TextBox(
+                text="" ,
+                fonts="MesloLGS NF",
+                foreground=colors[4],
+                # ~ background=colors[8],
+                padding=4,
+                fontsize=14
+            ),
+            
+            widget.Backlight(
+				foreground=colors[3],
+				        # ~ foreground="1a1b26",
+						backlight_name="intel_backlight",
+						),
+            widget.Sep(
+                         linewidth = 1,
+                         padding = 10,
+                         foreground = colors[2],
+                         ),
+            widget.TextBox(
+                text="" ,
+                fonts="MesloLGS NF",
+                foreground=colors[4],
+                # ~ background=colors[8],
+                padding=4,
+                fontsize=14
+            ),
+            widget.PulseVolume(
+                # ~ background=colors[8],
+                foreground=colors[3],
+                font="MesloLGS NF",
+                fontsize=12,
+                limit_max_volume = False,
+                mouse_callbacks={'Button3': lambda: qtile.cmd_spawn("pavucontrol")},
+                update_interval=0.01),
+                widget.Sep(
+                    linewidth=0,
+                    padding=6
+                ),
+                widget.CheckUpdates(
+                    display_format='{updates}',
+                    no_update_string='[ No updates ]',
+                    font="Source Code Pro",
+                    fontsize=11,
+					# ~ mouse_callbacks={'Button3': lambda: lazy.spawn("alacritty")},
+                    foreground=colors[9],
+                ),                
+                widget.CapsNumLockIndicator(
+                fmt="  {}", 
+                fontsize=10,
+                foreground=colors2["yellow"]
+                
+                ),
+                
+                widget.Memory(
+                         font="Noto Sans",
+                         # ~ format = {},
+                         update_interval = 1,
+                         fontsize = 12,
+                         foreground = colors[5],
+                         # ~ background = colors[1],
+                        ),
+                widget.Sep(
+                    linewidth=0,
+                    padding=6
+                ),
+                widget.TextBox(
+                        font="FontAwesome",
+                        text=" ",
+                        foreground=colors[3],
+                        padding = 0,
+                        fontsize=10
+                        ),
+                widget.Clock(
+                        foreground = colors[5],
+                        fontsize = 11,
+                        format="%Y-%m-%d %H:%M"
+                        ),
+                widget.Sep(
+                         linewidth = 1,
+                         padding = 10,
+                         foreground = colors[2],
+                         ),
                 widget.Systray(),
-                widget.QuickExit(),
+                widget.QuickExit(
+                    default_text="拉",
+                    fontsize=20,
+                    foreground="#e0def4",
+                    timer_interval=0,
+                    countdown_format="拉"
+                ),
             ],
-            24,
-            # border_width=[2, 0, 2, 0],  # Draw top and bottom borders
-            # border_color=["ff00ff", "000000", "ff00ff", "000000"]  # Borders are magenta
+            size=22,
+            # ~ background="#c6c6eb",
+            border_width=[1, 0, 1, 0],
+            opacity=0.8  # Draw top and bottom borders
+            # ~ border_color=["ff00ff", "000000", "ff00ff", "000000"]  # Borders are magenta
         ),
     ),
 ]
